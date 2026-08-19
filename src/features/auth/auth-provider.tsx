@@ -110,7 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         await signInWithEmailAndPassword(firebaseAuth, email, password);
       } catch (err) {
-        setError(extractAuthMessage(err));
+        setError(getAuthErrorMessage(err));
         throw err;
       }
     },
@@ -132,7 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         setUser(toAuthUser(credential.user));
       } catch (err) {
-        setError(extractAuthMessage(err));
+        setError(getAuthErrorMessage(err));
         throw err;
       }
     },
@@ -145,7 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await signInWithPopup(firebaseAuth, googleProvider);
     } catch (err) {
-      setError(extractAuthMessage(err));
+      setError(getAuthErrorMessage(err));
       throw err;
     }
   }, []);
@@ -200,7 +200,7 @@ export function useAuth(): AuthContextValue {
  * Extract a human-readable message from a Firebase Auth error. Falls back to a
  * generic message for unexpected shapes so the UI never shows raw internals.
  */
-function extractAuthMessage(err: unknown): string {
+export function getAuthErrorMessage(err: unknown): string {
   if (typeof err === "object" && err !== null && "code" in err) {
     const code = String((err as { code: unknown }).code);
     switch (code) {

@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/features/auth/auth-provider";
+import { getAuthErrorMessage, useAuth } from "@/features/auth/auth-provider";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -38,7 +38,7 @@ export default function LoginPage() {
       router.push(next);
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Sign in failed.");
+      setError(getAuthErrorMessage(err));
     } finally {
       setSubmitting(false);
     }
@@ -52,7 +52,7 @@ export default function LoginPage() {
       router.push(next);
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Google sign in failed.");
+      setError(getAuthErrorMessage(err));
     } finally {
       setSubmitting(false);
     }

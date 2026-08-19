@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/features/auth/auth-provider";
+import { getAuthErrorMessage, useAuth } from "@/features/auth/auth-provider";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -36,7 +36,7 @@ export default function RegisterPage() {
       router.push("/");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Registration failed.");
+      setError(getAuthErrorMessage(err));
     } finally {
       setSubmitting(false);
     }
@@ -50,7 +50,7 @@ export default function RegisterPage() {
       router.push("/");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Google sign in failed.");
+      setError(getAuthErrorMessage(err));
     } finally {
       setSubmitting(false);
     }
