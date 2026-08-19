@@ -1,7 +1,7 @@
 import type { Project } from "@/types/domain";
 import { createId } from "@/server/ids";
 import { indexes, keys } from "@/server/redis/keys";
-import { now, toScore } from "@/server/redis/serialize";
+import { now } from "@/server/redis/serialize";
 import {
   addToIndex,
   deleteEntity,
@@ -10,6 +10,7 @@ import {
   listIndex,
   removeFromIndex,
   setEntity,
+  toScore,
 } from "@/server/repositories/base";
 
 export interface CreateProjectInput {
