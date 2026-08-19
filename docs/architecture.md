@@ -153,16 +153,80 @@ Editor (debounced)  →  POST /api/writing/check  →  WritingService
 
 See [ADR 003](./decisions/003-writing-provider-abstraction.md).
 
-## 9. Prompt Resolver
+## 9. Blocks
 
-Templates are resolved by a dedicated resolver that:
+Blocks are reusable pieces of text (coding rules, output format, recurring
+instructions). They live in their own repository and are referenced from
+prompts using immutable IDs:
 
-1. Expands `{{block:id}}` references (with circular reference detection).
-2. Substitutes `{{variable}}` values.
-3. Validates the result (missing blocks, missing variables, etc.).
+```
+{{block:blk_01ABC}}
+```
 
-The resolver is a pure, testable module that does not touch Redis directly —
-repositories supply the blocks.
+The editor displays the raw reference; the resolver expands it at resolution
+time. Using immutable IDs (not block names) means renaming a block never breaks
+references.
+
+### Block subsystem
+
+- **Repository** (`src/server/repositories/block-repository.ts`): CRUD with
+  tag and favorite indexes, pipeline-based atomic writes.
+- **Service** (`src/server/services/block-service.ts`): Auth-scoped, enforces
+  ownership.
+- **API**: `GET/POST /api/blocks`, `GET/PATCH/DELETE /api/blocks/:id`.
+- **UI**: Block list page (`/blocks`) with create dialog; block editor page
+  (`/blocks/[id]`) with autosave, tags, and a "Copy reference" button.
+
+## 10. Prompt Resolver
+
+Templates are resolved by a dedicated, pure, testable resolver
+(`src/server/services/prompt-resolver.ts`) that does **not** touch Redis
+directly — repositories supply the blocks.
+
+### Template parser
+
+`src/lib/template-parser.ts` provides pure functions for detecting template
+syntax in prompt content:
+
+- `parseBlockReferences(text)` → finds all `{{block:blk_...}}` references with
+  offsets.
+- `parseVariables(text)` → finds all `{{variable_name}}` occurrences (excluding
+  block references).
+- `detectVariables(text)` → unique variable names, sorted.
+- `extractBlockIds(text)` → unique block IDs referenced in the text.
+
+### Resolution flow
+
+1. **Resolve block references** — recursively expand `{{block:id}}` by looking
+   up the block's content. Nested references are resolved depth-first.
+   **Circular references** are detected by tracking visited block IDs in the
+   chain and throwing `PROMPT_CIRCULAR_REFERENCE`.
+2. **Detect variables** — after block expansion, since blocks may introduce
+   their own `{{variable}}` placeholders.
+3. **Resolve variables** — substitute `{{variable}}` with user-provided values.
+   Missing variables are reported but do not block resolution.
+4. **Validate** — report `missingBlockIds` and `missingVariables`.
+
+### API
+
+`POST /api/prompts/:id/resolve` — fetches referenced blocks from the
+repository, runs the resolver, returns:
+
+```json
+{
+  "content": "resolved text...",
+  "detectedVariables": [{ "name": "framework" }],
+  "missingBlockIds": ["blk_missing"],
+  "missingVariables": ["database"]
+}
+```
+
+### UI
+
+The **"Use Prompt" dialog** (`src/features/prompts/use-prompt-dialog.tsx`)
+opens from the prompt editor, auto-detects variables, shows a live resolved
+preview as the user fills in values, and offers "Copy Original" and "Copy
+Resolved" buttons. Missing block references are flagged with a warning.
 
 ## 10. Autosave
 
