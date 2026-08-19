@@ -198,3 +198,6 @@ updated alongside the code.
 - Phase 2 — Redis Foundation (Upstash Redis client, key namespace helpers,
   serialization helpers, repository base patterns, ULID-based prefixed IDs,
   UserProfile repository + bootstrap on sign-in).
+- Phase 3 — Projects (repository, service, API, sidebar integration, projects
+  list page, project detail page, create/edit dialog, pin/archive/delete
+  actions, Zod validation, 58 tests passing).

@@ -2,15 +2,27 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, Layers, LogOut, Plus, Settings, Star } from "lucide-react";
+import {
+  FolderClosed,
+  FileText,
+  Layers,
+  LogOut,
+  Plus,
+  Settings,
+  Star,
+} from "lucide-react";
+import { useState } from "react";
 
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/features/auth/auth-provider";
 import { Button } from "@/components/ui/button";
 import type { AuthUser } from "@/types";
+import type { Project } from "@/types/domain";
+import { ProjectDialog } from "@/features/projects/project-dialog";
 
 const navItems = [
   { href: "/", label: "Home", icon: FileText, exact: true },
+  { href: "/projects", label: "Projects", icon: FolderClosed },
   { href: "/prompts", label: "All Prompts", icon: Layers },
   { href: "/blocks", label: "Blocks", icon: Layers },
   { href: "/favorites", label: "Favorites", icon: Star },
@@ -18,11 +30,13 @@ const navItems = [
 
 interface SidebarProps {
   user: AuthUser;
+  projects: Project[];
 }
 
-export function Sidebar({ user }: SidebarProps) {
+export function Sidebar({ user, projects }: SidebarProps) {
   const pathname = usePathname();
   const { signOut } = useAuth();
+  const [projectDialogOpen, setProjectDialogOpen] = useState(false);
 
   const initials = (user.displayName ?? user.email ?? "?")
     .split(/[\s@.]+/)
@@ -30,6 +44,11 @@ export function Sidebar({ user }: SidebarProps) {
     .slice(0, 2)
     .map((part) => part.charAt(0).toUpperCase())
     .join("");
+
+  const sortedProjects = [...projects].sort((a, b) => {
+    if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+    return b.name.localeCompare(a.name);
+  });
 
   return (
     <aside className="border-border bg-surface flex h-screen w-60 flex-col border-r">
@@ -39,7 +58,7 @@ export function Sidebar({ user }: SidebarProps) {
         </Link>
       </div>
 
-      <nav className="flex-1 space-y-1 px-3 py-2">
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-2">
         {navItems.map((item) => {
           const active = item.exact
             ? pathname === item.href
@@ -65,14 +84,47 @@ export function Sidebar({ user }: SidebarProps) {
         <div className="text-muted-foreground px-3 pt-6 pb-1 text-xs font-medium tracking-wide uppercase">
           Projects
         </div>
-        <div className="text-muted-foreground px-3 py-2 text-sm">
-          <p className="text-xs">No projects yet.</p>
-        </div>
+
+        {sortedProjects.length === 0 ? (
+          <p className="text-muted-foreground px-3 py-2 text-xs">
+            No projects yet.
+          </p>
+        ) : (
+          sortedProjects.map((project) => {
+            const href = `/projects/${project.id}`;
+            const active = pathname === href;
+            return (
+              <Link
+                key={project.id}
+                href={href}
+                className={cn(
+                  "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors",
+                  active
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground hover:bg-surface-hover hover:text-foreground",
+                )}
+              >
+                {project.pinned ? (
+                  <span className="text-warning text-xs">★</span>
+                ) : (
+                  <span className="text-muted-foreground/50 text-xs">○</span>
+                )}
+                <span className="truncate">{project.name}</span>
+                {project.archived ? (
+                  <span className="text-muted-foreground ml-auto text-[10px] uppercase">
+                    arch
+                  </span>
+                ) : null}
+              </Link>
+            );
+          })
+        )}
+
         <Button
           variant="ghost"
           size="sm"
-          className="text-muted-foreground w-full justify-start"
-          disabled
+          className="text-muted-foreground mt-1 w-full justify-start"
+          onClick={() => setProjectDialogOpen(true)}
         >
           <Plus className="h-4 w-4" />
           New Project
@@ -115,6 +167,11 @@ export function Sidebar({ user }: SidebarProps) {
           </button>
         </div>
       </div>
+
+      <ProjectDialog
+        open={projectDialogOpen}
+        onOpenChange={setProjectDialogOpen}
+      />
     </aside>
   );
 }

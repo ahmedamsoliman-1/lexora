@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
 import { getAuthUser } from "@/server/auth/session";
 import { isFirebaseAdminConfigured } from "@/server/auth/firebase-admin";
+import { listProjects } from "@/server/repositories/project-repository";
 
 /**
  * Protected workspace layout. Every route in the `(workspace)` group requires
@@ -34,9 +35,13 @@ export default async function WorkspaceLayout({
     photoURL: null,
   };
 
+  // Best-effort project fetch for the sidebar. When Redis isn't configured or
+  // the user has no profile yet, the sidebar shows the empty state.
+  const projects = user ? await listProjects(user.uid).catch(() => []) : [];
+
   return (
     <div className="bg-background flex h-screen overflow-hidden">
-      <Sidebar user={displayUser} />
+      <Sidebar user={displayUser} projects={projects} />
       <main className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-5xl px-6 py-8">{children}</div>
       </main>

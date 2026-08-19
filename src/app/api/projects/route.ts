@@ -1,11 +1,11 @@
 import type { NextRequest } from "next/server";
 
-import { createProjectSchema, listProjectsQuerySchema } from "@/schemas/project";
-import { errorResponse, json } from "@/server/api";
 import {
-  createProject,
-  listProjects,
-} from "@/server/services/project-service";
+  createProjectSchema,
+  listProjectsQuerySchema,
+} from "@/schemas/project";
+import { errorResponse, json } from "@/server/api";
+import { createProject, listProjects } from "@/server/services/project-service";
 
 /**
  *   GET    /api/projects   → list the authenticated user's projects

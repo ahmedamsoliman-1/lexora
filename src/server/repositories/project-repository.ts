@@ -55,7 +55,11 @@ export async function createProject(
   };
 
   await setEntity(keys.project(userId, project.id), project);
-  await addToIndex(indexes.userProjects(userId), project.id, toScore(timestamp));
+  await addToIndex(
+    indexes.userProjects(userId),
+    project.id,
+    toScore(timestamp),
+  );
 
   return project;
 }
