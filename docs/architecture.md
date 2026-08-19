@@ -201,3 +201,21 @@ updated alongside the code.
 - Phase 3 — Projects (repository, service, API, sidebar integration, projects
   list page, project detail page, create/edit dialog, pin/archive/delete
   actions, Zod validation, 58 tests passing).
+- Phase 4 — Basic Prompts (prompt repository with tag/favorite/project
+  indexes, prompt service, API routes with filters, TipTap editor with
+  debounced autosave, prompt list + detail pages, project detail showing
+  prompts, dashboard showing recent prompts, tag normalization, 68 tests).
+- Phase 5 — Writing Assistance (WritingProvider interface, LanguageTool
+  provider with normalization, writing service with caching/rate-limiting/
+  dictionary filtering, /api/writing/check + /api/writing/dictionary routes,
+  TipTap decoration extension for inline issue highlighting, suggestion popup,
+  writing issue panel, debounced useWritingCheck hook, editor integration
+  with click-to-fix and ignore, writing status footer, 81 tests).
+- Phase 6 — Blocks (block repository with tag/favorite indexes, block service,
+  API routes, block list page with create dialog, block editor page with
+  autosave + copy-reference, {{block:id}} reference syntax, 107 tests).
+- Phase 7 — Variables & Resolution (template parser for {{variable}} and
+  {{block:id}} detection, prompt resolver with circular reference detection,
+  /api/prompts/:id/resolve route, "Use Prompt" dialog with variable form +
+  resolved preview + copy original/resolved, copy button on prompt editor,
+  107 tests).

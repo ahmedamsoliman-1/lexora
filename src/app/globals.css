@@ -180,3 +180,62 @@
     }
   }
 }
+
+/* Writing issue decorations (inline underlines) */
+@layer components {
+  .writing-issue {
+    cursor: pointer;
+    text-decoration-line: underline;
+    text-decoration-style: wavy;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+
+  .writing-issue--spelling {
+    text-decoration-color: hsl(0 72% 51%);
+  }
+
+  .writing-issue--grammar {
+    text-decoration-color: hsl(38 92% 50%);
+  }
+
+  .writing-issue--punctuation {
+    text-decoration-color: hsl(220 70% 55%);
+  }
+
+  .writing-issue--style {
+    text-decoration-color: hsl(270 60% 55%);
+  }
+
+  .writing-issue--typography {
+    text-decoration-color: hsl(200 70% 50%);
+  }
+
+  .writing-issue--other {
+    text-decoration-color: hsl(215 16% 47%);
+  }
+
+  .dark .writing-issue--spelling {
+    text-decoration-color: hsl(0 63% 50%);
+  }
+
+  .dark .writing-issue--grammar {
+    text-decoration-color: hsl(38 92% 50%);
+  }
+
+  .dark .writing-issue--punctuation {
+    text-decoration-color: hsl(220 60% 60%);
+  }
+
+  .dark .writing-issue--style {
+    text-decoration-color: hsl(270 50% 60%);
+  }
+
+  .dark .writing-issue--typography {
+    text-decoration-color: hsl(200 60% 55%);
+  }
+
+  .dark .writing-issue--other {
+    text-decoration-color: hsl(215 20% 65%);
+  }
+}

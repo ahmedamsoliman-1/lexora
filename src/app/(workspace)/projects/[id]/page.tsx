@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ProjectDetailClient } from "@/features/projects/project-detail-client";
 import { getAuthUser } from "@/server/auth/session";
 import { getProject } from "@/server/repositories/project-repository";
+import { listPrompts } from "@/server/repositories/prompt-repository";
 import { isRedisConfigured } from "@/server/redis/client";
 
 interface PageProps {
@@ -22,5 +23,9 @@ export default async function ProjectDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  return <ProjectDetailClient project={project} />;
+  const prompts = await listPrompts(user.uid, { projectId: id }).catch(
+    () => [],
+  );
+
+  return <ProjectDetailClient project={project} prompts={prompts} />;
 }

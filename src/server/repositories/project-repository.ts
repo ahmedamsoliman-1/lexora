@@ -12,7 +12,6 @@ import {
   setEntity,
   toScore,
 } from "@/server/repositories/base";
-
 export interface CreateProjectInput {
   name: string;
   description?: string;

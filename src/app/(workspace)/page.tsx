@@ -5,12 +5,18 @@ import { EmptyState } from "@/components/common/empty-state";
 import { getAuthUser } from "@/server/auth/session";
 import { isFirebaseAdminConfigured } from "@/server/auth/firebase-admin";
 import { listProjects } from "@/server/repositories/project-repository";
+import { listPrompts } from "@/server/repositories/prompt-repository";
 
 export default async function DashboardPage() {
   const user = await getAuthUser();
   const configured = isFirebaseAdminConfigured;
 
-  const projects = user ? await listProjects(user.uid).catch(() => []) : [];
+  const [projects, recentPrompts] = user
+    ? await Promise.all([
+        listProjects(user.uid).catch(() => []),
+        listPrompts(user.uid, { limit: 5 }).catch(() => []),
+      ])
+    : [[], []];
 
   const pinnedProjects = projects.filter((p) => p.pinned);
   const hour = new Date().getHours();
@@ -42,11 +48,31 @@ export default async function DashboardPage() {
           </div>
         </div>
         <div className="mt-4">
-          <EmptyState
-            icon={FileText}
-            title="No prompts yet"
-            description="Create your first prompt and Lexora will keep it organized, corrected and ready to reuse."
-          />
+          {recentPrompts.length > 0 ? (
+            <div className="space-y-1">
+              {recentPrompts.map((prompt) => (
+                <Link
+                  key={prompt.id}
+                  href={`/prompts/${prompt.id}`}
+                  className="border-border bg-background hover:bg-surface-hover flex items-center gap-3 rounded-lg border p-3 transition-colors"
+                >
+                  <FileText className="text-muted-foreground h-4 w-4 shrink-0" />
+                  <span className="flex-1 truncate text-sm font-medium">
+                    {prompt.title}
+                  </span>
+                  <span className="text-muted-foreground text-xs">
+                    {prompt.type}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              icon={FileText}
+              title="No prompts yet"
+              description="Create your first prompt and Lexora will keep it organized, corrected and ready to reuse."
+            />
+          )}
         </div>
       </div>
 
@@ -74,7 +100,10 @@ export default async function DashboardPage() {
 
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard label="Projects" value={projects.length} />
-        <StatCard label="Prompts" value={0} />
+        <StatCard
+          label="Prompts"
+          value={recentPrompts.length === 5 ? 5 : recentPrompts.length}
+        />
         <StatCard label="Blocks" value={0} />
       </div>
     </div>
