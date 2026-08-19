@@ -40,10 +40,10 @@ export default async function WorkspaceLayout({
   const projects = user ? await listProjects(user.uid).catch(() => []) : [];
 
   return (
-    <div className="bg-background flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden">
       <Sidebar user={displayUser} projects={projects} />
       <main className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-5xl px-6 py-8">{children}</div>
+        <div className="mx-auto max-w-5xl px-6 py-10 lg:px-10">{children}</div>
       </main>
     </div>
   );

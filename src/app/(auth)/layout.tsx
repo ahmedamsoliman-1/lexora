@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 
-import { env } from "@/lib/env";
+import { LexoraMark } from "@/components/brand/lexora-mark";
 import { getAuthUser } from "@/server/auth/session";
 
 /**
@@ -19,13 +19,11 @@ export default async function AuthLayout({
   }
 
   return (
-    <div className="bg-background flex min-h-screen flex-col items-center justify-center px-6 py-12">
+    <div className="flex min-h-screen flex-col items-center justify-center px-6 py-12">
       <div className="w-full max-w-sm">
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {env.NEXT_PUBLIC_APP_NAME}
-          </h1>
-          <p className="text-muted-foreground mt-1 text-sm">
+        <div className="mb-8 flex flex-col items-center text-center">
+          <LexoraMark label />
+          <p className="text-muted-foreground mt-3 text-sm">
             Your prompt workspace.
           </p>
         </div>

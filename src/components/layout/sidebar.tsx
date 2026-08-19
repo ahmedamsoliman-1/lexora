@@ -16,6 +16,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/features/auth/auth-provider";
 import { Button } from "@/components/ui/button";
+import { LexoraMark } from "@/components/brand/lexora-mark";
 import type { AuthUser } from "@/types";
 import type { Project } from "@/types/domain";
 import { ProjectDialog } from "@/features/projects/project-dialog";
@@ -51,10 +52,10 @@ export function Sidebar({ user, projects }: SidebarProps) {
   });
 
   return (
-    <aside className="border-border bg-surface flex h-screen w-60 flex-col border-r">
-      <div className="flex h-14 items-center px-5">
-        <Link href="/" className="text-base font-semibold tracking-tight">
-          Lexora
+    <aside className="border-border/80 bg-surface/80 flex h-screen w-64 flex-col border-r backdrop-blur-xl">
+      <div className="flex h-20 items-center px-5">
+        <Link href="/" aria-label="Lexora home">
+          <LexoraMark label />
         </Link>
       </div>
 
@@ -69,10 +70,10 @@ export function Sidebar({ user, projects }: SidebarProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
                 active
-                  ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground hover:bg-surface-hover hover:text-foreground",
+                  ? "bg-primary text-primary-foreground shadow-[0_8px_18px_-12px_hsl(var(--primary)/0.9)]"
+                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
               )}
             >
               <Icon className="h-4 w-4" />
@@ -98,10 +99,10 @@ export function Sidebar({ user, projects }: SidebarProps) {
                 key={project.id}
                 href={href}
                 className={cn(
-                  "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors",
+                  "flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm transition-all duration-200",
                   active
                     ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:bg-surface-hover hover:text-foreground",
+                    : "text-muted-foreground hover:bg-accent hover:text-foreground",
                 )}
               >
                 {project.pinned ? (
@@ -135,10 +136,10 @@ export function Sidebar({ user, projects }: SidebarProps) {
         <Link
           href="/settings"
           className={cn(
-            "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+            "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
             pathname.startsWith("/settings")
-              ? "bg-accent text-accent-foreground"
-              : "text-muted-foreground hover:bg-surface-hover hover:text-foreground",
+              ? "bg-primary text-primary-foreground shadow-[0_8px_18px_-12px_hsl(var(--primary)/0.9)]"
+              : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
           )}
         >
           <Settings className="h-4 w-4" />
@@ -146,7 +147,7 @@ export function Sidebar({ user, projects }: SidebarProps) {
         </Link>
 
         <div className="mt-2 flex items-center gap-2.5 rounded-md px-3 py-2">
-          <div className="bg-primary text-primary-foreground flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-medium">
+          <div className="bg-primary text-primary-foreground flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xs font-semibold shadow-[0_6px_14px_-8px_hsl(var(--primary)/0.9)]">
             {initials || "?"}
           </div>
           <div className="min-w-0 flex-1">
