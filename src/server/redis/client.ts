@@ -21,5 +21,6 @@ export const redis: Redis | null = isRedisConfigured
   ? new Redis({
       url: env.UPSTASH_REDIS_REST_URL!,
       token: env.UPSTASH_REDIS_REST_TOKEN!,
+      automaticDeserialization: false,
     })
   : null;
