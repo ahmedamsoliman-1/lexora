@@ -12,15 +12,27 @@ search.
 
 ## Features
 
-- Focused, fast writing editor with inline writing assistance
+### Implemented
+
+- Focused, fast writing editor (TipTap) with inline writing assistance
 - Firebase Authentication (email/password, Google)
 - Upstash Redis persistence with user-scoped repositories
-- Projects, prompts, blocks, tags, favorites, and version history
+- Projects with pin/archive/delete
+- Prompts with autosave, tags, favorites, and archive
 - Reusable blocks referenced from prompts via `{{block:id}}`
 - Template variables via `{{variable_name}}` and a resolution engine
-- Global search with `⌘ K`
-- Light / dark / system theme
+- Copy original or resolved prompts
+- Inline spelling/grammar corrections with suggestion popup and issue panel
 - Provider-independent writing assistance (LanguageTool-compatible)
+- Light / dark / system theme
+
+### Planned (not yet implemented)
+
+- Global search with `⌘ K` (Phase 8)
+- Version history with snapshots and restore (Phase 9)
+- Composer workspace (Phase 10)
+- Personal dictionary UI
+- Prompt quality analysis
 
 ## Architecture
 

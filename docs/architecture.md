@@ -167,6 +167,8 @@ The editor displays the raw reference; the resolver expands it at resolution
 time. Using immutable IDs (not block names) means renaming a block never breaks
 references.
 
+See [ADR 005](./decisions/005-block-reference-syntax.md).
+
 ### Block subsystem
 
 - **Repository** (`src/server/repositories/block-repository.ts`): CRUD with
@@ -228,6 +230,8 @@ opens from the prompt editor, auto-detects variables, shows a live resolved
 preview as the user fills in values, and offers "Copy Original" and "Copy
 Resolved" buttons. Missing block references are flagged with a warning.
 
+See [ADR 006](./decisions/006-template-variable-syntax.md).
+
 ## 10. Autosave
 
 Prompts autosave. The editor keeps local state, debounces changes, and PATCHes
@@ -236,10 +240,12 @@ checks, and word count. Provider failures never prevent saving.
 
 ## 11. Search
 
-`SearchService` is an abstraction over the persistence layer. The MVP
-implementation uses Redis-backed indexes and lightweight normalized matching.
-The UI depends only on the `SearchService` interface, so a dedicated search
-service can be plugged in later without UI changes.
+> **Status: Not yet implemented (Phase 8).**
+
+`SearchService` will be an abstraction over the persistence layer. The MVP
+implementation will use Redis-backed indexes and lightweight normalized
+matching. The UI will depend only on the `SearchService` interface, so a
+dedicated search service can be plugged in later without UI changes.
 
 ## 12. Environment
 
@@ -277,9 +283,10 @@ updated alongside the code.
   with click-to-fix and ignore, writing status footer, 81 tests).
 - Phase 6 — Blocks (block repository with tag/favorite indexes, block service,
   API routes, block list page with create dialog, block editor page with
-  autosave + copy-reference, {{block:id}} reference syntax, 107 tests).
-- Phase 7 — Variables & Resolution (template parser for {{variable}} and
-  {{block:id}} detection, prompt resolver with circular reference detection,
-  /api/prompts/:id/resolve route, "Use Prompt" dialog with variable form +
-  resolved preview + copy original/resolved, copy button on prompt editor,
-  107 tests).
+  autosave + copy-reference, `{{block:id}}` reference syntax).
+- Phase 7 — Variables & Resolution (template parser for `{{variable}}` and
+  `{{block:id}}` detection, prompt resolver with circular reference detection,
+  `/api/prompts/:id/resolve` route, "Use Prompt" dialog with variable form +
+  resolved preview + copy original/resolved, copy button on prompt editor).
+
+**Current state:** 107 tests passing, 21 routes, 6 ADRs.
