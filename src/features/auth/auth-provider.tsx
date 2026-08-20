@@ -14,6 +14,8 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut as firebaseSignOut,
   updateProfile,
   type User as FirebaseUser,
@@ -84,6 +86,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    // Handle redirect result from signInWithRedirect fallback.
+    getRedirectResult(firebaseAuth).catch((err) => {
+      console.error("[auth] getRedirectResult failed:", err);
+    });
+
     const unsubscribe = onAuthStateChanged(firebaseAuth, async (fbUser) => {
       if (fbUser) {
         setUser(toAuthUser(fbUser));
@@ -110,6 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         await signInWithEmailAndPassword(firebaseAuth, email, password);
       } catch (err) {
+        console.error("[auth] signInWithEmail failed:", err);
         setError(getAuthErrorMessage(err));
         throw err;
       }
@@ -132,6 +140,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         setUser(toAuthUser(credential.user));
       } catch (err) {
+        console.error("[auth] signUpWithEmail failed:", err);
         setError(getAuthErrorMessage(err));
         throw err;
       }
@@ -143,8 +152,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
     if (!firebaseAuth) return;
     try {
+      // Try popup first — it's the better UX when it works.
       await signInWithPopup(firebaseAuth, googleProvider);
     } catch (err) {
+      console.error("[auth] signInWithGoogle (popup) failed:", err);
+
+      // If the popup was blocked or IndexedDB failed, fall back to redirect.
+      const code = (err as { code?: string }).code;
+      const message = (err as Error)?.message ?? "";
+      const isPopupBlocker =
+        code === "auth/popup-blocked" ||
+        code === "auth/cancelled-popup-request" ||
+        message.includes("Database is closing") ||
+        message.includes("Database is closing/hidden");
+
+      if (isPopupBlocker) {
+        console.warn("[auth] Falling back to redirect-based Google sign-in.");
+        await signInWithRedirect(firebaseAuth, googleProvider);
+        return;
+      }
+
       setError(getAuthErrorMessage(err));
       throw err;
     }
@@ -219,8 +246,22 @@ export function getAuthErrorMessage(err: unknown): string {
       case "auth/popup-closed-by-user":
         return "The sign-in popup was closed before completing.";
       case "auth/operation-not-allowed":
-        return "This sign-in method is not enabled.";
+        return "This sign-in method is not enabled in Firebase Console.";
+      case "auth/unauthorized-domain":
+        return "This domain is not authorized for Firebase sign-in. Add it in Firebase Console → Authentication → Settings → Authorized domains.";
+      case "auth/network-request-failed":
+        return "Network error reaching Firebase. Check your connection.";
+      case "auth/api-key-not-valid":
+        return "The Firebase API key is invalid. Check NEXT_PUBLIC_FIREBASE_API_KEY.";
+      case "auth/configuration-not-found":
+        return "Firebase configuration not found. Check your NEXT_PUBLIC_FIREBASE_* env vars.";
+      case "auth/internal-error":
+        return "Firebase internal error. Check the browser console for details.";
       default:
+        // Log unrecognized codes so they're visible during development.
+        if (typeof console !== "undefined") {
+          console.warn(`[auth] Unmapped Firebase error code: ${code}`, err);
+        }
         break;
     }
   }

@@ -1,7 +1,13 @@
 "use client";
 
 import { getApp, getApps, initializeApp, type FirebaseApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, type Auth } from "firebase/auth";
+import {
+  browserLocalPersistence,
+  getAuth,
+  GoogleAuthProvider,
+  setPersistence,
+  type Auth,
+} from "firebase/auth";
 
 import { env } from "@/lib/env";
 
@@ -12,6 +18,11 @@ import { env } from "@/lib/env";
  * variables are absent the app remains runnable — `isFirebaseConfigured` is
  * `false` and the UI shows an appropriate "auth not configured" state instead
  * of crashing.
+ *
+ * Persistence is explicitly set to `browserLocalPersistence` to avoid
+ * "Database is closing/hidden" errors that can occur with the default
+ * indexedDB persistence in some browser environments (especially when
+ * third-party cookies/IndexedDB are blocked).
  */
 
 export const isFirebaseConfigured = Boolean(
@@ -34,6 +45,13 @@ if (isFirebaseConfigured) {
         appId: env.NEXT_PUBLIC_FIREBASE_APP_ID!,
       });
   firebaseAuth = getAuth(firebaseApp);
+  // Explicitly set persistence — the default (indexedDB) can throw
+  // "Database is closing/hidden" in browsers that block third-party
+  // IndexedDB access in popup contexts.
+  setPersistence(firebaseAuth, browserLocalPersistence).catch(() => {
+    // Best-effort — if persistence fails, sign-in will still attempt
+    // with the default storage.
+  });
 }
 
 export { firebaseApp, firebaseAuth };
