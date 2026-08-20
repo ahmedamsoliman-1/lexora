@@ -21,6 +21,7 @@ import { useAutosave, type SaveStatus } from "@/hooks/use-autosave";
 import { useWritingCheck, type WritingStatus } from "@/hooks/use-writing-check";
 import { normalizeTags } from "@/lib/tags";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -76,6 +77,7 @@ interface PromptEditorProps {
  */
 export function PromptEditor({ prompt }: PromptEditorProps) {
   const router = useRouter();
+  const { toast } = useToast();
 
   const [title, setTitle] = useState(prompt.title);
   const [tags, setTags] = useState<string[]>(prompt.tags);
@@ -205,22 +207,47 @@ export function PromptEditor({ prompt }: PromptEditorProps) {
   }
 
   async function patchField(data: Partial<Prompt>) {
-    const res = await fetch(`/api/prompts/${prompt.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (res.ok) {
+    try {
+      const res = await fetch(`/api/prompts/${prompt.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Update failed");
+      toast(
+        data.favorite !== undefined
+          ? data.favorite
+            ? "Added to favorites"
+            : "Removed from favorites"
+          : data.archived
+            ? "Prompt archived"
+            : "Prompt restored",
+        { variant: "success" },
+      );
       router.refresh();
+    } catch {
+      toast("Could not update prompt", {
+        description: "Please try again.",
+        variant: "error",
+      });
     }
   }
 
   async function handleDelete() {
     setDeleting(true);
     try {
-      await fetch(`/api/prompts/${prompt.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/prompts/${prompt.id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Delete failed");
+      toast("Prompt deleted", { variant: "success" });
       router.push("/prompts");
       router.refresh();
+    } catch {
+      toast("Could not delete prompt", {
+        description: "Please try again.",
+        variant: "error",
+      });
     } finally {
       setDeleting(false);
     }
@@ -275,9 +302,17 @@ export function PromptEditor({ prompt }: PromptEditorProps) {
               size="icon"
               className="h-8 w-8"
               onClick={async () => {
-                await navigator.clipboard.writeText(content);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
+                try {
+                  await navigator.clipboard.writeText(content);
+                  setCopied(true);
+                  toast("Prompt copied", { variant: "success" });
+                  setTimeout(() => setCopied(false), 2000);
+                } catch {
+                  toast("Could not copy prompt", {
+                    description: "Please try again.",
+                    variant: "error",
+                  });
+                }
               }}
               aria-label="Copy prompt"
             >

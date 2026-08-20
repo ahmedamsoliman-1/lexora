@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 
 import { AuthProvider } from "@/features/auth/auth-provider";
+import { ThemeProvider } from "@/components/theme/theme-provider";
+import { ToastProvider } from "@/components/ui/toast";
 import { env } from "@/lib/env";
 
 import "./globals.css";
@@ -17,6 +19,26 @@ const jetBrainsMono = JetBrains_Mono({
   variable: "--font-mono",
   display: "swap",
 });
+
+/**
+ * Inline script that runs before React hydrates to set the initial theme
+ * class on <html>, preventing a flash of unstyled content (FOUC).
+ * Reads from localStorage, falling back to the system preference.
+ */
+const themeInitScript = `
+(function() {
+  try {
+    var stored = localStorage.getItem('lexora-theme');
+    var theme = stored || 'system';
+    var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var isDark = theme === 'dark' || (theme === 'system' && systemDark);
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      document.documentElement.style.colorScheme = 'dark';
+    }
+  } catch(e) {}
+})();
+`;
 
 export const metadata: Metadata = {
   title: {
@@ -65,8 +87,15 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${inter.variable} ${jetBrainsMono.variable}`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className="bg-background text-foreground min-h-screen font-sans antialiased">
-        <AuthProvider>{children}</AuthProvider>
+        <ToastProvider>
+          <ThemeProvider>
+            <AuthProvider>{children}</AuthProvider>
+          </ThemeProvider>
+        </ToastProvider>
       </body>
     </html>
   );

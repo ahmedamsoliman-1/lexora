@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { useAutosave, type SaveStatus } from "@/hooks/use-autosave";
 import { normalizeTags } from "@/lib/tags";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 import type { Block } from "@/types/domain";
 
 interface BlockEditorProps {
@@ -22,6 +23,7 @@ export function BlockEditor({ block }: BlockEditorProps) {
   const [tags, setTags] = useState<string[]>(block.tags);
   const [tagInput, setTagInput] = useState("");
   const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
 
   const editor = useEditor({
     extensions: [
@@ -87,9 +89,17 @@ export function BlockEditor({ block }: BlockEditorProps) {
   }
 
   async function copyReference() {
-    await navigator.clipboard.writeText(blockRef);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(blockRef);
+      setCopied(true);
+      toast("Block reference copied", { variant: "success" });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast("Could not copy reference", {
+        description: "Copy it manually from the reference field.",
+        variant: "error",
+      });
+    }
   }
 
   return (

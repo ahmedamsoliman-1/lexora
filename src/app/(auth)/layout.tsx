@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 
 import { LexoraMark } from "@/components/brand/lexora-mark";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { getAuthUser } from "@/server/auth/session";
 
 /**
@@ -19,7 +20,10 @@ export default async function AuthLayout({
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-6 py-12">
+    <div className="relative flex min-h-screen flex-col items-center justify-center px-6 py-12">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center text-center">
           <LexoraMark label />

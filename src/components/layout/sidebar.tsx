@@ -18,6 +18,8 @@ import { useAuth } from "@/features/auth/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { LexoraMark } from "@/components/brand/lexora-mark";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { useToast } from "@/components/ui/toast";
 import type { AuthUser } from "@/types";
 import type { Project } from "@/types/domain";
 import { ProjectDialog } from "@/features/projects/project-dialog";
@@ -44,7 +46,24 @@ interface SidebarContentProps {
 function SidebarContent({ user, projects, onNavigate }: SidebarContentProps) {
   const pathname = usePathname();
   const { signOut } = useAuth();
+  const { toast } = useToast();
   const [projectDialogOpen, setProjectDialogOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+
+  async function handleSignOut() {
+    setSigningOut(true);
+    try {
+      await signOut();
+      toast("Signed out", { variant: "success" });
+    } catch {
+      toast("Could not sign out", {
+        description: "Please try again.",
+        variant: "error",
+      });
+    } finally {
+      setSigningOut(false);
+    }
+  }
 
   const initials = (user.displayName ?? user.email ?? "?")
     .split(/[\s@.]+/)
@@ -142,6 +161,13 @@ function SidebarContent({ user, projects, onNavigate }: SidebarContentProps) {
       </nav>
 
       <div className="border-border border-t p-3">
+        <div className="mb-2 flex items-center justify-between px-1">
+          <span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+            Theme
+          </span>
+          <ThemeToggle />
+        </div>
+
         <Link
           href="/settings"
           onClick={onNavigate}
@@ -170,7 +196,8 @@ function SidebarContent({ user, projects, onNavigate }: SidebarContentProps) {
           </div>
           <button
             type="button"
-            onClick={() => void signOut()}
+            onClick={() => void handleSignOut()}
+            disabled={signingOut}
             aria-label="Sign out"
             className="text-muted-foreground hover:bg-surface-hover hover:text-foreground rounded-md p-2 transition-colors"
           >

@@ -1,6 +1,3 @@
-import { Plus } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
 import { ProjectList } from "@/features/projects/project-list";
 import { getAuthUser } from "@/server/auth/session";
 import { listProjects } from "@/server/repositories/project-repository";
@@ -25,15 +22,6 @@ export default async function ProjectsPage() {
       </header>
 
       <ProjectList projects={projects} />
-
-      {projects.length > 0 ? (
-        <div className="flex justify-center pt-4">
-          <Button variant="outline" size="sm">
-            <Plus className="mr-2 h-4 w-4" />
-            New Project
-          </Button>
-        </div>
-      ) : null}
     </div>
   );
 }

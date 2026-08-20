@@ -16,6 +16,7 @@ import {
 import { EmptyState } from "@/components/common/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/toast";
 import type { Prompt } from "@/types/domain";
 
 interface PromptListProps {
@@ -150,6 +151,7 @@ function CreatePromptDialog({
   const [projectId, setProjectId] = useState(projects[0]?.id ?? "");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -175,11 +177,18 @@ function CreatePromptDialog({
       }
       const data = (await res.json()) as { prompt: Prompt };
       onOpenChange(false);
+      toast("Prompt created", { variant: "success" });
       setTitle("");
       router.push(`/prompts/${data.prompt.id}`);
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+      const message =
+        err instanceof Error ? err.message : "Something went wrong.";
+      setError(message);
+      toast("Could not create prompt", {
+        description: message,
+        variant: "error",
+      });
     } finally {
       setSubmitting(false);
     }

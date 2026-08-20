@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/toast";
 import type { Project } from "@/types/domain";
 
 interface ProjectDialogProps {
@@ -69,6 +70,7 @@ function ProjectForm({
   onDone: () => void;
 }) {
   const router = useRouter();
+  const { toast } = useToast();
   const isEdit = Boolean(project);
 
   const [name, setName] = useState(project?.name ?? "");
@@ -101,9 +103,18 @@ function ProjectForm({
       }
 
       onDone();
+      toast(isEdit ? "Project updated" : "Project created", {
+        variant: "success",
+      });
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+      const message =
+        err instanceof Error ? err.message : "Something went wrong.";
+      setError(message);
+      toast("Could not save project", {
+        description: message,
+        variant: "error",
+      });
     } finally {
       setSubmitting(false);
     }

@@ -46,6 +46,12 @@ export function ProjectList({ projects }: ProjectListProps) {
           <ProjectCard key={project.id} project={project} />
         ))}
       </div>
+      <div className="mt-4 flex justify-center pt-4">
+        <Button variant="outline" size="sm" onClick={() => setDialogOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          New Project
+        </Button>
+      </div>
       <ProjectDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </>
   );

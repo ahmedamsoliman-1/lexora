@@ -15,11 +15,13 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/toast";
 import { getAuthErrorMessage, useAuth } from "@/features/auth/auth-provider";
 
 export default function RegisterPage() {
   const router = useRouter();
   const { signUpWithEmail, signInWithGoogle, configured } = useAuth();
+  const { toast } = useToast();
 
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
@@ -33,10 +35,16 @@ export default function RegisterPage() {
     setSubmitting(true);
     try {
       await signUpWithEmail(email, password, displayName || undefined);
+      toast("Account created", { variant: "success" });
       router.push("/");
       router.refresh();
     } catch (err) {
-      setError(getAuthErrorMessage(err));
+      const message = getAuthErrorMessage(err);
+      setError(message);
+      toast("Could not create account", {
+        description: message,
+        variant: "error",
+      });
     } finally {
       setSubmitting(false);
     }
@@ -47,10 +55,16 @@ export default function RegisterPage() {
     setSubmitting(true);
     try {
       await signInWithGoogle();
+      toast("Signed in successfully", { variant: "success" });
       router.push("/");
       router.refresh();
     } catch (err) {
-      setError(getAuthErrorMessage(err));
+      const message = getAuthErrorMessage(err);
+      setError(message);
+      toast("Google sign-in failed", {
+        description: message,
+        variant: "error",
+      });
     } finally {
       setSubmitting(false);
     }
@@ -85,7 +99,7 @@ export default function RegisterPage() {
           onClick={handleGoogle}
           disabled={submitting}
         >
-          Continue with Google
+          {submitting ? "Opening Google..." : "Continue with Google"}
         </Button>
         <div className="relative">
           <div className="absolute inset-0 flex items-center">

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Check, Copy, AlertCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 import {
   Dialog,
   DialogContent,
@@ -41,6 +42,7 @@ export function UsePromptDialog({
   onOpenChange,
   promptId,
 }: UsePromptDialogProps) {
+  const { toast } = useToast();
   const [result, setResult] = useState<ResolveResult | null>(null);
   const [values, setValues] = useState<Record<string, string>>({});
   const [copied, setCopied] = useState(false);
@@ -121,17 +123,36 @@ export function UsePromptDialog({
   }
 
   async function copyResolved() {
-    await navigator.clipboard.writeText(resolvedContent);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(
+        resolvedContent || result?.content || "",
+      );
+      setCopied(true);
+      toast("Resolved prompt copied", { variant: "success" });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast("Could not copy prompt", {
+        description: "Please try again.",
+        variant: "error",
+      });
+    }
   }
 
   async function copyOriginal() {
-    const res = await fetch(`/api/prompts/${promptId}`);
-    const data = (await res.json()) as { prompt: { content: string } };
-    await navigator.clipboard.writeText(data.prompt.content);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      const res = await fetch(`/api/prompts/${promptId}`);
+      if (!res.ok) throw new Error("Fetch failed");
+      const data = (await res.json()) as { prompt: { content: string } };
+      await navigator.clipboard.writeText(data.prompt.content);
+      setCopied(true);
+      toast("Original prompt copied", { variant: "success" });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast("Could not copy prompt", {
+        description: "Please try again.",
+        variant: "error",
+      });
+    }
   }
 
   const hasVariables = (result?.detectedVariables.length ?? 0) > 0;

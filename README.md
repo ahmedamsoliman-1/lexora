@@ -25,7 +25,7 @@ identity.
 - Copy original or resolved prompts
 - Inline spelling/grammar corrections with suggestion popup and issue panel
 - Provider-independent writing assistance (LanguageTool-compatible)
-- Purple/cyan brand identity with intentional light/dark/system theme
+- Purple/cyan brand identity with light/dark/system theme toggle
 
 ### Planned (not yet implemented)
 

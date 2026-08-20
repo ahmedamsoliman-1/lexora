@@ -286,9 +286,8 @@ See [ADR 009](./decisions/009-dependency-overrides.md).
 
 ## 14. Visual Identity & Theme
 
-Lexora uses a **purple/cyan brand identity** with semantic CSS design tokens.
-All colors are defined as HSL channel values in `:root` and `.dark` in
-`src/app/globals.css`, surfaced to Tailwind via the `@theme inline` block.
+Lexora uses a **purple/cyan brand identity** with semantic CSS design tokens
+and full **light/dark/system theme switching**.
 
 ### Brand mark
 
@@ -302,17 +301,41 @@ Semantic tokens (`--background`, `--foreground`, `--surface`, `--primary`,
 `--accent`, `--muted-foreground`, `--border`, etc.) are the only color
 references in components. No hard-coded hex values appear in component code.
 
+Both light and dark themes define `--shadow-*` tokens (`--shadow-sm`,
+`--shadow-md`, `--shadow-lg`, `--shadow-glow`) that are used by cards,
+buttons, and the sidebar for consistent depth.
+
+### Theme system
+
+- **`ThemeProvider`** (`src/components/theme/theme-provider.tsx`): Client
+  context that manages the theme state (`system` | `light` | `dark`). Reads
+  the initial value from `localStorage` via a lazy state initializer (no
+  setState-in-effect). When `system`, subscribes to
+  `matchMedia("(prefers-color-scheme: dark)")` and derives the resolved theme.
+  Persists changes to `localStorage`.
+- **FOUC prevention**: An inline script in `<head>` (layout.tsx) reads
+  `localStorage` and sets the `.dark` class on `<html>` before React hydrates.
+- **`ThemeToggle`** (`src/components/theme/theme-toggle.tsx`): Segmented
+  Light/Dark/System toggle shown in the sidebar footer, mobile top bar, and
+  auth layout.
+
 ### Intentional dark mode
 
-Dark mode is not a simple inversion — surfaces shift to deep indigo
-(`232 34% 8%`), the primary shifts to a lighter purple (`258 100% 72%`) for
-contrast, and the body background uses dark radial gradients.
+Dark mode is not a simple inversion — surfaces shift to deep blue-tinted dark
+(`245 30% 6%`), the primary shifts to a brighter violet (`255 95% 75%`) for
+contrast, and the body background uses dark radial gradients. Shadow tokens
+use black with higher opacity for depth.
 
 ### Writing decorations
 
 Writing-issue decoration colors (§8) are category-specific and defined in
 `globals.css` under `@layer components`. They are independent of the brand
-palette so they remain readable regardless of theme changes.
+palette so they remain readable regardless of theme.
+
+### Scrollbar & selection
+
+Custom scrollbar styling (thin, translucent) and primary-tinted text
+selection are applied in the base layer for both themes.
 
 See [ADR 007](./decisions/007-visual-identity-and-theme.md).
 
@@ -409,5 +432,8 @@ updated alongside the code.
   mobile sidebar drawer, `MobileTopBar`, bottom-sheet writing issue panel,
   responsive padding and touch targets
   ([ADR 010](./decisions/010-mobile-first-responsive-design.md)).
+- Theme system: `ThemeProvider` with system/light/dark switching, FOUC
+  prevention via inline script, `ThemeToggle` segmented control, refined
+  token palette with shadow system, custom scrollbar and selection styling.
 
 **Current state:** 115 tests passing, 23 routes, 10 ADRs.

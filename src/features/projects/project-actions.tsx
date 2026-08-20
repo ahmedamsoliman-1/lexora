@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Project } from "@/types/domain";
+import { useToast } from "@/components/ui/toast";
 
 interface ProjectActionsProps {
   project: Project;
@@ -35,17 +36,35 @@ export function ProjectActions({ project, onEdit }: ProjectActionsProps) {
   const router = useRouter();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const { toast } = useToast();
 
   async function patch(data: Partial<Project>) {
-    const res = await fetch(`/api/projects/${project.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) {
-      throw new Error("Action failed.");
+    try {
+      const res = await fetch(`/api/projects/${project.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        throw new Error("Action failed.");
+      }
+      toast(
+        data.pinned !== undefined
+          ? data.pinned
+            ? "Project pinned"
+            : "Project unpinned"
+          : data.archived
+            ? "Project archived"
+            : "Project restored",
+        { variant: "success" },
+      );
+      router.refresh();
+    } catch {
+      toast("Could not update project", {
+        description: "Please try again.",
+        variant: "error",
+      });
     }
-    router.refresh();
   }
 
   async function handleDelete() {
@@ -58,10 +77,14 @@ export function ProjectActions({ project, onEdit }: ProjectActionsProps) {
         throw new Error("Delete failed.");
       }
       setConfirmDelete(false);
+      toast("Project deleted", { variant: "success" });
       router.push("/projects");
       router.refresh();
     } catch {
-      // best-effort
+      toast("Could not delete project", {
+        description: "Please try again.",
+        variant: "error",
+      });
     } finally {
       setDeleting(false);
     }

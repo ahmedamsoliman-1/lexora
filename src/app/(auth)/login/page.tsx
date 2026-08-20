@@ -15,12 +15,14 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/toast";
 import { getAuthErrorMessage, useAuth } from "@/features/auth/auth-provider";
 
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { signInWithEmail, signInWithGoogle, configured } = useAuth();
+  const { toast } = useToast();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,10 +37,13 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       await signInWithEmail(email, password);
+      toast("Signed in successfully", { variant: "success" });
       router.push(next);
       router.refresh();
     } catch (err) {
-      setError(getAuthErrorMessage(err));
+      const message = getAuthErrorMessage(err);
+      setError(message);
+      toast("Sign-in failed", { description: message, variant: "error" });
     } finally {
       setSubmitting(false);
     }
@@ -49,10 +54,16 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       await signInWithGoogle();
+      toast("Signed in successfully", { variant: "success" });
       router.push(next);
       router.refresh();
     } catch (err) {
-      setError(getAuthErrorMessage(err));
+      const message = getAuthErrorMessage(err);
+      setError(message);
+      toast("Google sign-in failed", {
+        description: message,
+        variant: "error",
+      });
     } finally {
       setSubmitting(false);
     }
@@ -87,7 +98,7 @@ export default function LoginPage() {
           onClick={handleGoogle}
           disabled={submitting}
         >
-          Continue with Google
+          {submitting ? "Opening Google..." : "Continue with Google"}
         </Button>
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
