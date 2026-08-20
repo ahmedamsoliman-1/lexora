@@ -14,8 +14,9 @@ identity.
 
 ### Implemented
 
+- Mobile-first responsive design (sidebar drawer, bottom-sheet panels, touch targets)
 - Focused, fast writing editor (TipTap) with inline writing assistance
-- Firebase Authentication (email/password, Google)
+- Firebase Authentication (email/password, Google with redirect fallback)
 - Upstash Redis persistence with user-scoped repositories
 - Projects with pin/archive/delete
 - Prompts with autosave, tags, favorites, and archive
@@ -184,7 +185,8 @@ src/
 └── types/          # Shared TypeScript types
 ```
 
-See [`docs/architecture.md`](./docs/architecture.md) and
+See [`docs/architecture.md`](./docs/architecture.md),
+[`docs/decisions/`](./docs/decisions/) (10 ADRs), and
 [`docs/master-plan.md`](./docs/master-plan.md) for more.
 
 ## License

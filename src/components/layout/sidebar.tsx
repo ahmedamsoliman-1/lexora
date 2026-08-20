@@ -16,6 +16,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/features/auth/auth-provider";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { LexoraMark } from "@/components/brand/lexora-mark";
 import type { AuthUser } from "@/types";
 import type { Project } from "@/types/domain";
@@ -29,12 +30,18 @@ const navItems = [
   { href: "/favorites", label: "Favorites", icon: Star },
 ];
 
-interface SidebarProps {
+interface SidebarContentProps {
   user: AuthUser;
   projects: Project[];
+  /** Called when a navigation link is clicked (used to close the mobile drawer). */
+  onNavigate?: () => void;
 }
 
-export function Sidebar({ user, projects }: SidebarProps) {
+/**
+ * The inner content of the sidebar — navigation, projects list, settings, user.
+ * Shared between the desktop fixed sidebar and the mobile sheet drawer.
+ */
+function SidebarContent({ user, projects, onNavigate }: SidebarContentProps) {
   const pathname = usePathname();
   const { signOut } = useAuth();
   const [projectDialogOpen, setProjectDialogOpen] = useState(false);
@@ -52,9 +59,9 @@ export function Sidebar({ user, projects }: SidebarProps) {
   });
 
   return (
-    <aside className="border-border/80 bg-surface/80 flex h-screen w-64 flex-col border-r backdrop-blur-xl">
-      <div className="flex h-20 items-center px-5">
-        <Link href="/" aria-label="Lexora home">
+    <>
+      <div className="flex h-16 shrink-0 items-center px-5 lg:h-20">
+        <Link href="/" aria-label="Lexora home" onClick={onNavigate}>
           <LexoraMark label />
         </Link>
       </div>
@@ -69,8 +76,9 @@ export function Sidebar({ user, projects }: SidebarProps) {
             <Link
               key={item.href}
               href={item.href}
+              onClick={onNavigate}
               className={cn(
-                "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
+                "flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 lg:py-2",
                 active
                   ? "bg-primary text-primary-foreground shadow-[0_8px_18px_-12px_hsl(var(--primary)/0.9)]"
                   : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
@@ -98,8 +106,9 @@ export function Sidebar({ user, projects }: SidebarProps) {
               <Link
                 key={project.id}
                 href={href}
+                onClick={onNavigate}
                 className={cn(
-                  "flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm transition-all duration-200",
+                  "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all duration-200 lg:py-1.5",
                   active
                     ? "bg-accent text-accent-foreground"
                     : "text-muted-foreground hover:bg-accent hover:text-foreground",
@@ -135,8 +144,9 @@ export function Sidebar({ user, projects }: SidebarProps) {
       <div className="border-border border-t p-3">
         <Link
           href="/settings"
+          onClick={onNavigate}
           className={cn(
-            "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
+            "flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 lg:py-2",
             pathname.startsWith("/settings")
               ? "bg-primary text-primary-foreground shadow-[0_8px_18px_-12px_hsl(var(--primary)/0.9)]"
               : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
@@ -162,7 +172,7 @@ export function Sidebar({ user, projects }: SidebarProps) {
             type="button"
             onClick={() => void signOut()}
             aria-label="Sign out"
-            className="text-muted-foreground hover:bg-surface-hover hover:text-foreground rounded-md p-1.5 transition-colors"
+            className="text-muted-foreground hover:bg-surface-hover hover:text-foreground rounded-md p-2 transition-colors"
           >
             <LogOut className="h-4 w-4" />
           </button>
@@ -173,6 +183,52 @@ export function Sidebar({ user, projects }: SidebarProps) {
         open={projectDialogOpen}
         onOpenChange={setProjectDialogOpen}
       />
+    </>
+  );
+}
+
+interface SidebarProps {
+  user: AuthUser;
+  projects: Project[];
+}
+
+/**
+ * Desktop sidebar — fixed, always visible on lg+ screens.
+ */
+export function Sidebar({ user, projects }: SidebarProps) {
+  return (
+    <aside className="border-border/80 bg-surface/80 hidden w-64 shrink-0 flex-col border-r backdrop-blur-xl lg:flex">
+      <SidebarContent user={user} projects={projects} />
     </aside>
+  );
+}
+
+interface MobileSidebarProps {
+  user: AuthUser;
+  projects: Project[];
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+/**
+ * Mobile sidebar — a slide-in drawer (Sheet) with overlay.
+ * Hidden on lg+ screens where the desktop sidebar takes over.
+ */
+export function MobileSidebar({
+  user,
+  projects,
+  open,
+  onOpenChange,
+}: MobileSidebarProps) {
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="left" className="flex w-72 flex-col p-0" hideClose>
+        <SidebarContent
+          user={user}
+          projects={projects}
+          onNavigate={() => onOpenChange(false)}
+        />
+      </SheetContent>
+    </Sheet>
   );
 }

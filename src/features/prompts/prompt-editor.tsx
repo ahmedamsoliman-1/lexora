@@ -36,6 +36,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import type { Prompt } from "@/types/domain";
 import type { WritingIssue } from "@/server/writing/types";
 import {
@@ -77,6 +83,7 @@ export function PromptEditor({ prompt }: PromptEditorProps) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showIssuePanel, setShowIssuePanel] = useState(true);
+  const [mobileIssuePanelOpen, setMobileIssuePanelOpen] = useState(false);
   const [selectedIssue, setSelectedIssue] = useState<WritingIssue | null>(null);
   const [popupPosition, setPopupPosition] = useState<{
     top: number;
@@ -106,7 +113,7 @@ export function PromptEditor({ prompt }: PromptEditorProps) {
     editorProps: {
       attributes: {
         class: cn(
-          "prose-lexora min-h-[400px] w-full resize-none bg-transparent px-0 py-4",
+          "prose-lexora min-h-[300px] w-full resize-none bg-transparent px-0 py-4 sm:min-h-[400px]",
           "text-foreground text-base leading-relaxed outline-none",
           "placeholder:text-muted-foreground/50",
         ),
@@ -258,10 +265,10 @@ export function PromptEditor({ prompt }: PromptEditorProps) {
               variant="outline"
               size="sm"
               onClick={() => setUsePromptOpen(true)}
-              className="mr-2"
+              className="mr-1 px-2 sm:mr-2 sm:px-4"
             >
-              <Play className="mr-1.5 h-3.5 w-3.5" />
-              Use
+              <Play className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Use</span>
             </Button>
             <Button
               variant="ghost"
@@ -282,7 +289,13 @@ export function PromptEditor({ prompt }: PromptEditorProps) {
             </Button>
             {writingIssues.length > 0 ? (
               <button
-                onClick={() => setShowIssuePanel(!showIssuePanel)}
+                onClick={() => {
+                  if (window.innerWidth >= 1024) {
+                    setShowIssuePanel(!showIssuePanel);
+                  } else {
+                    setMobileIssuePanelOpen(true);
+                  }
+                }}
                 className="text-muted-foreground hover:bg-surface-hover rounded-md p-2 transition-colors"
                 aria-label="Toggle writing panel"
               >
@@ -377,7 +390,7 @@ export function PromptEditor({ prompt }: PromptEditorProps) {
         </div>
 
         {/* Footer */}
-        <div className="border-border text-muted-foreground mt-8 flex items-center gap-4 border-t pt-3 text-xs">
+        <div className="border-border text-muted-foreground mt-8 flex flex-wrap items-center gap-x-4 gap-y-1 border-t pt-3 text-xs">
           <SaveStatusIndicator status={saveStatus} />
           <WritingStatusIndicator
             status={writingStatus}
@@ -417,7 +430,7 @@ export function PromptEditor({ prompt }: PromptEditorProps) {
         </Dialog>
       </div>
 
-      {/* Writing issue panel (right column) */}
+      {/* Writing issue panel — desktop (right column) */}
       {showIssuePanel && writingIssues.length > 0 ? (
         <aside className="border-border hidden w-72 shrink-0 border-l lg:block">
           <WritingIssuePanel
@@ -429,6 +442,29 @@ export function PromptEditor({ prompt }: PromptEditorProps) {
           />
         </aside>
       ) : null}
+
+      {/* Writing issue panel — mobile (bottom sheet) */}
+      <Sheet open={mobileIssuePanelOpen} onOpenChange={setMobileIssuePanelOpen}>
+        <SheetContent side="bottom" className="max-h-[70vh] p-0 lg:hidden">
+          <SheetHeader className="border-border border-b">
+            <SheetTitle>Writing Issues</SheetTitle>
+          </SheetHeader>
+          <div className="overflow-y-auto">
+            <WritingIssuePanel
+              issues={writingIssues}
+              onApply={(id, rep) => {
+                handleApplyReplacement(id, rep);
+              }}
+              onIgnore={handleIgnoreIssue}
+              onIgnoreAll={() => {
+                handleIgnoreAll();
+                setMobileIssuePanelOpen(false);
+              }}
+              onRecheck={recheck}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Suggestion popup (floating) */}
       <SuggestionPopup

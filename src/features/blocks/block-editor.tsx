@@ -178,7 +178,7 @@ export function BlockEditor({ block }: BlockEditorProps) {
       </div>
 
       {/* Footer */}
-      <div className="border-border text-muted-foreground mt-8 flex items-center gap-4 border-t pt-3 text-xs">
+      <div className="border-border text-muted-foreground mt-8 flex flex-wrap items-center gap-x-4 gap-y-1 border-t pt-3 text-xs">
         <SaveStatusIndicator status={status} />
         <span>{wordCount} words</span>
       </div>

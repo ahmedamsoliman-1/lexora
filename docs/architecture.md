@@ -316,7 +316,46 @@ palette so they remain readable regardless of theme changes.
 
 See [ADR 007](./decisions/007-visual-identity-and-theme.md).
 
-## 15. Status
+## 15. Responsive Design
+
+Lexora is **mobile-first** — the primary usage target is mobile devices.
+
+### Layout architecture
+
+```
+WorkspaceShell (client component, manages drawer state)
+├── Sidebar (desktop, fixed aside, hidden below lg)
+├── MobileSidebar (Sheet drawer from left, hidden at lg+)
+├── MobileTopBar (hamburger + brand, hidden at lg+)
+└── main content (responsive padding: px-4 py-6 → lg:px-10 lg:py-10)
+```
+
+- **Mobile** (< 1024px): Top bar with hamburger menu, slide-in sidebar drawer,
+  bottom-sheet writing issue panel, single-column layouts, enlarged touch
+  targets (`py-2.5`).
+- **Desktop** (1024px+): Fixed sidebar, multi-column grids, side panel for
+  writing issues, standard touch targets (`py-2`).
+
+### Key components
+
+- `Sheet` (`src/components/ui/sheet.tsx`): Radix Dialog-based slide-in drawer,
+  used for the mobile sidebar (left) and the writing issue panel (bottom).
+- `WorkspaceShell` (`src/components/layout/workspace-shell.tsx`): Client
+  component managing `mobileSidebarOpen` state.
+- `MobileTopBar` (`src/components/layout/mobile-top-bar.tsx`): Compact header
+  with hamburger toggle.
+- `Sidebar` shares `SidebarContent` between desktop and mobile with
+  `onNavigate` to auto-close the drawer on link click.
+
+### Writing issue panel
+
+- **Desktop**: Fixed right-column `aside` (`hidden lg:block`)
+- **Mobile**: Bottom Sheet (`side="bottom"`, `max-h-[70vh]`), triggered by the
+  same toggle button which checks viewport width.
+
+See [ADR 010](./decisions/010-mobile-first-responsive-design.md).
+
+## 16. Status
 
 This document tracks the implemented architecture. As phases land it is
 updated alongside the code.
@@ -366,5 +405,9 @@ updated alongside the code.
   `pnpm-workspace.yaml` ([ADR 009](./decisions/009-dependency-overrides.md)).
 - Auth error handling refactored to exported `getAuthErrorMessage` with unit
   tests.
+- Mobile-first responsive design: `Sheet` component, `WorkspaceShell` with
+  mobile sidebar drawer, `MobileTopBar`, bottom-sheet writing issue panel,
+  responsive padding and touch targets
+  ([ADR 010](./decisions/010-mobile-first-responsive-design.md)).
 
-**Current state:** 109 tests passing, 23 routes, 9 ADRs.
+**Current state:** 115 tests passing, 23 routes, 10 ADRs.

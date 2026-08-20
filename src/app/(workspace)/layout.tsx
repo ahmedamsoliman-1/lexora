@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 
-import { Sidebar } from "@/components/layout/sidebar";
+import { WorkspaceShell } from "@/components/layout/workspace-shell";
 import { getAuthUser } from "@/server/auth/session";
 import { isFirebaseAdminConfigured } from "@/server/auth/firebase-admin";
 import { listProjects } from "@/server/repositories/project-repository";
@@ -26,8 +26,6 @@ export default async function WorkspaceLayout({
     redirect("/login?next=/");
   }
 
-  // Dev fallback: when auth isn't configured, use a placeholder user so the
-  // shell renders without crashing. Data operations will still fail safely.
   const displayUser = user ?? {
     uid: "dev-user",
     email: "dev@localhost",
@@ -35,16 +33,11 @@ export default async function WorkspaceLayout({
     photoURL: null,
   };
 
-  // Best-effort project fetch for the sidebar. When Redis isn't configured or
-  // the user has no profile yet, the sidebar shows the empty state.
   const projects = user ? await listProjects(user.uid).catch(() => []) : [];
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar user={displayUser} projects={projects} />
-      <main className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-5xl px-6 py-10 lg:px-10">{children}</div>
-      </main>
-    </div>
+    <WorkspaceShell user={displayUser} projects={projects}>
+      {children}
+    </WorkspaceShell>
   );
 }
