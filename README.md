@@ -7,8 +7,8 @@
 Lexora is a personal workspace for managing prompts, reusable paragraphs,
 instructions, templates, snippets, and other pieces of text. It is built around
 a focused editor with first-class writing assistance, project-based
-organization, reusable blocks, template variables, and fast keyboard-driven
-search.
+organization, reusable blocks, template variables, and a purple/cyan brand
+identity.
 
 ## Features
 
@@ -24,7 +24,7 @@ search.
 - Copy original or resolved prompts
 - Inline spelling/grammar corrections with suggestion popup and issue panel
 - Provider-independent writing assistance (LanguageTool-compatible)
-- Light / dark / system theme
+- Purple/cyan brand identity with intentional light/dark/system theme
 
 ### Planned (not yet implemented)
 
@@ -57,13 +57,16 @@ See [`docs/architecture.md`](./docs/architecture.md) for details and
 
 ## Tech Stack
 
-- **Framework:** Next.js 14 (App Router) + React 18 + TypeScript 5
-- **Styling:** Tailwind CSS + shadcn/ui + Lucide icons
+- **Framework:** Next.js 16 (App Router) + React 19 + TypeScript 5
+- **Styling:** Tailwind CSS v4 + shadcn/ui + Lucide icons
 - **Auth:** Firebase Authentication (client SDK + Admin SDK)
-- **Persistence:** Upstash Redis (REST)
+- **Persistence:** Upstash Redis (REST, `automaticDeserialization: false`)
 - **Writing assistance:** LanguageTool-compatible provider abstraction
-- **Validation:** Zod (+ `@t3-oss/env-nextjs` for environment variables)
-- **Testing:** Vitest + Testing Library
+- **Editor:** TipTap v3 (ProseMirror-based, with decoration plugin)
+- **Validation:** Zod v4 (+ `@t3-oss/env-nextjs` for environment variables)
+- **Testing:** Vitest + Testing Library + happy-dom
+- **Dependency overrides:** `pnpm-workspace.yaml` (see
+  [ADR 009](./docs/decisions/009-dependency-overrides.md))
 
 ## Prerequisites
 
@@ -172,10 +175,10 @@ Lexora targets [Vercel](https://vercel.com).
 ```
 src/
 ├── app/            # Next.js App Router (pages, layouts, route handlers)
-├── components/     # Reusable React components (ui, layout, common)
-├── features/       # Feature modules (projects, prompts, blocks, ...)
-├── hooks/          # React hooks
-├── lib/            # Cross-cutting utilities (env, cn, ...)
+├── components/     # Reusable React components (ui, layout, common, brand)
+├── features/       # Feature modules (auth, projects, prompts, blocks, writing)
+├── hooks/          # React hooks (autosave, writing check)
+├── lib/            # Cross-cutting utilities (env, cn, tags, template-parser)
 ├── schemas/        # Zod schemas for API/runtime validation
 ├── server/         # Server-only code (auth, repositories, services, redis, writing)
 └── types/          # Shared TypeScript types

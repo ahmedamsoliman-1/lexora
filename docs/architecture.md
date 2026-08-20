@@ -74,12 +74,20 @@ Route Handler  →  Service  →  Repository  →  Redis
 Firebase Authentication is the only authentication mechanism.
 
 - The browser uses the Firebase client SDK to sign in and obtain an ID token.
-- The ID token is sent to the BFF (typically via a cookie or `Authorization`
-  header).
+- The ID token is sent to the BFF via a session cookie (httpOnly, created by
+  `POST /api/auth/session`).
 - The BFF uses the Firebase Admin SDK to verify the token and extract the
   `uid`.
 - Every backend operation is scoped to that `uid`. Client-supplied user IDs
   are never trusted.
+
+### Error handling
+
+The `getAuthErrorMessage` function (`src/features/auth/auth-provider.tsx`)
+maps Firebase error codes to user-friendly messages, ensuring raw internals
+are never surfaced to the UI. It is exported as a pure function so it can be
+unit-tested independently of the React component tree
+(`src/features/auth/auth-provider.test.ts`).
 
 See [ADR 002](./decisions/002-use-firebase-auth.md).
 
@@ -113,7 +121,16 @@ lexora:v1:writing:{hash}             # writing check cache, TTL
 Application code never uses `KEYS *`. All lookups go through explicit indexes
 maintained by repositories.
 
-See [ADR 001](./decisions/001-use-upstash-redis.md).
+### Deserialization
+
+The Redis client is configured with `automaticDeserialization: false`. All
+JSON serialization/deserialization is handled explicitly by the
+`serialize`/`deserialize` helpers in `src/server/redis/serialize.ts`. This
+ensures `redis.get()` always returns `string | null`, giving the repository
+base predictable types to work with.
+
+See [ADR 001](./decisions/001-use-upstash-redis.md) and
+[ADR 008](./decisions/008-disable-redis-autodeserialization.md).
 
 ## 6. IDs
 
@@ -150,8 +167,11 @@ Editor (debounced)  →  POST /api/writing/check  →  WritingService
 - The editor only ever depends on the normalized `WritingIssue[]` shape.
 - Results are cached in Redis under `lexora:v1:writing:{hash}` with a TTL.
 - Provider failures never block editing or saving.
+- The editor is built on TipTap v3 (ProseMirror), chosen for its mature
+  Decoration API for inline issue highlighting.
 
-See [ADR 003](./decisions/003-writing-provider-abstraction.md).
+See [ADR 003](./decisions/003-writing-provider-abstraction.md) and
+[ADR 004](./decisions/004-editor-selection.md).
 
 ## 9. Blocks
 
@@ -232,13 +252,13 @@ Resolved" buttons. Missing block references are flagged with a warning.
 
 See [ADR 006](./decisions/006-template-variable-syntax.md).
 
-## 10. Autosave
+## 11. Autosave
 
 Prompts autosave. The editor keeps local state, debounces changes, and PATCHes
 the prompt. The editor footer shows independent states for saving, writing
 checks, and word count. Provider failures never prevent saving.
 
-## 11. Search
+## 12. Search
 
 > **Status: Not yet implemented (Phase 8).**
 
@@ -247,40 +267,86 @@ implementation will use Redis-backed indexes and lightweight normalized
 matching. The UI will depend only on the `SearchService` interface, so a
 dedicated search service can be plugged in later without UI changes.
 
-## 12. Environment
+## 13. Environment
 
 Environment variables are validated with Zod via `@t3-oss/env-nextjs` in
 `src/lib/env.ts`. Missing or malformed variables fail fast at startup in
 non-test environments.
 
-## 13. Status
+### Dependency overrides
+
+Transitive dependency compatibility issues are resolved via pnpm overrides in
+`pnpm-workspace.yaml`:
+
+- `@firebase/auth` pinned to `1.13.3` (compatibility with `firebase` v12.16.0).
+- `jwks-rsa>jose` pinned to `4.15.9` (avoids `jose` v5 breaking changes in
+  `firebase-admin`'s JWT verification path).
+
+See [ADR 009](./decisions/009-dependency-overrides.md).
+
+## 14. Visual Identity & Theme
+
+Lexora uses a **purple/cyan brand identity** with semantic CSS design tokens.
+All colors are defined as HSL channel values in `:root` and `.dark` in
+`src/app/globals.css`, surfaced to Tailwind via the `@theme inline` block.
+
+### Brand mark
+
+`src/components/brand/lexora-mark.tsx` — an SVG with a purple-to-cyan gradient
+(`#8b5cf6` → `#22d3ee`) forming a stylized "L". Used in the sidebar header and
+auth layout. An `icon.svg` at the app root provides favicon support.
+
+### Design tokens
+
+Semantic tokens (`--background`, `--foreground`, `--surface`, `--primary`,
+`--accent`, `--muted-foreground`, `--border`, etc.) are the only color
+references in components. No hard-coded hex values appear in component code.
+
+### Intentional dark mode
+
+Dark mode is not a simple inversion — surfaces shift to deep indigo
+(`232 34% 8%`), the primary shifts to a lighter purple (`258 100% 72%`) for
+contrast, and the body background uses dark radial gradients.
+
+### Writing decorations
+
+Writing-issue decoration colors (§8) are category-specific and defined in
+`globals.css` under `@layer components`. They are independent of the brand
+palette so they remain readable regardless of theme changes.
+
+See [ADR 007](./decisions/007-visual-identity-and-theme.md).
+
+## 15. Status
 
 This document tracks the implemented architecture. As phases land it is
 updated alongside the code.
 
 **Implemented:**
 
-- Phase 0 — Foundation (Next.js, TypeScript, Tailwind, shadcn/ui, env
-  validation, theme tokens, lint/format/test tooling, base structure).
+- Phase 0 — Foundation (Next.js 16, React 19, TypeScript 5, Tailwind CSS v4,
+  shadcn/ui, env validation, theme tokens, lint/format/test tooling, base
+  directory structure).
 - Phase 1 — Authentication (Firebase client SDK, Firebase Admin SDK,
   email/password + Google sign-in, session-cookie-based BFF auth, protected
-  workspace layout, login/register/logout UI, normalized error mapping).
-- Phase 2 — Redis Foundation (Upstash Redis client, key namespace helpers,
-  serialization helpers, repository base patterns, ULID-based prefixed IDs,
-  UserProfile repository + bootstrap on sign-in).
+  workspace layout, login/register/logout UI, `getAuthErrorMessage` with unit
+  tests).
+- Phase 2 — Redis Foundation (Upstash Redis client with
+  `automaticDeserialization: false`, key namespace helpers, serialization
+  helpers, repository base patterns, ULID-based prefixed IDs, UserProfile
+  repository + bootstrap on sign-in).
 - Phase 3 — Projects (repository, service, API, sidebar integration, projects
   list page, project detail page, create/edit dialog, pin/archive/delete
-  actions, Zod validation, 58 tests passing).
+  actions, Zod validation).
 - Phase 4 — Basic Prompts (prompt repository with tag/favorite/project
   indexes, prompt service, API routes with filters, TipTap editor with
   debounced autosave, prompt list + detail pages, project detail showing
-  prompts, dashboard showing recent prompts, tag normalization, 68 tests).
+  prompts, dashboard showing recent prompts, tag normalization).
 - Phase 5 — Writing Assistance (WritingProvider interface, LanguageTool
   provider with normalization, writing service with caching/rate-limiting/
-  dictionary filtering, /api/writing/check + /api/writing/dictionary routes,
-  TipTap decoration extension for inline issue highlighting, suggestion popup,
-  writing issue panel, debounced useWritingCheck hook, editor integration
-  with click-to-fix and ignore, writing status footer, 81 tests).
+  dictionary filtering, `/api/writing/check` + `/api/writing/dictionary`
+  routes, TipTap decoration extension for inline issue highlighting,
+  suggestion popup, writing issue panel, debounced `useWritingCheck` hook,
+  editor integration with click-to-fix and ignore, writing status footer).
 - Phase 6 — Blocks (block repository with tag/favorite indexes, block service,
   API routes, block list page with create dialog, block editor page with
   autosave + copy-reference, `{{block:id}}` reference syntax).
@@ -289,4 +355,16 @@ updated alongside the code.
   `/api/prompts/:id/resolve` route, "Use Prompt" dialog with variable form +
   resolved preview + copy original/resolved, copy button on prompt editor).
 
-**Current state:** 107 tests passing, 21 routes, 6 ADRs.
+**Post-phase improvements:**
+
+- Visual identity redesign: `LexoraMark` brand component, purple/cyan gradient
+  theme, intentional dark mode, `icon.svg` favicon
+  ([ADR 007](./decisions/007-visual-identity-and-theme.md)).
+- Redis `automaticDeserialization: false` to ensure predictable types in
+  repository helpers ([ADR 008](./decisions/008-disable-redis-autodeserialization.md)).
+- Dependency overrides for `@firebase/auth` and `jwks-rsa>jose` via
+  `pnpm-workspace.yaml` ([ADR 009](./decisions/009-dependency-overrides.md)).
+- Auth error handling refactored to exported `getAuthErrorMessage` with unit
+  tests.
+
+**Current state:** 109 tests passing, 23 routes, 9 ADRs.
