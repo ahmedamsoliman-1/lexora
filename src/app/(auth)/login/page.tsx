@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/toast";
+import { Spinner } from "@/components/ui/spinner";
 import { getAuthErrorMessage, useAuth } from "@/features/auth/auth-provider";
 
 export default function LoginPage() {
@@ -98,6 +99,7 @@ export default function LoginPage() {
           onClick={handleGoogle}
           disabled={submitting}
         >
+          {submitting ? <Spinner label="Opening Google" /> : null}
           {submitting ? "Opening Google..." : "Continue with Google"}
         </Button>
         <div className="relative">
@@ -140,6 +142,7 @@ export default function LoginPage() {
             </p>
           )}
           <Button type="submit" className="w-full" disabled={submitting}>
+            {submitting ? <Spinner label="Signing in" /> : null}
             {submitting ? "Signing in..." : "Sign in"}
           </Button>
         </form>

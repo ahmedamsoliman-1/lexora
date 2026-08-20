@@ -20,6 +20,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { LexoraMark } from "@/components/brand/lexora-mark";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { useToast } from "@/components/ui/toast";
+import { Spinner } from "@/components/ui/spinner";
 import type { AuthUser } from "@/types";
 import type { Project } from "@/types/domain";
 import { ProjectDialog } from "@/features/projects/project-dialog";
@@ -201,7 +202,11 @@ function SidebarContent({ user, projects, onNavigate }: SidebarContentProps) {
             aria-label="Sign out"
             className="text-muted-foreground hover:bg-surface-hover hover:text-foreground rounded-md p-2 transition-colors"
           >
-            <LogOut className="h-4 w-4" />
+            {signingOut ? (
+              <Spinner label="Signing out" />
+            ) : (
+              <LogOut className="h-4 w-4" />
+            )}
           </button>
         </div>
       </div>

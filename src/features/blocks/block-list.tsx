@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
+import { Spinner } from "@/components/ui/spinner";
 import { normalizeTags } from "@/lib/tags";
 import type { Block } from "@/types/domain";
 
@@ -247,6 +248,7 @@ function CreateBlockDialog({
               type="submit"
               disabled={submitting || !name.trim() || !content.trim()}
             >
+              {submitting ? <Spinner label="Creating block" /> : null}
               {submitting ? "Creating..." : "Create block"}
             </Button>
           </DialogFooter>

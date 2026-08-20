@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
+import { Spinner } from "@/components/ui/spinner";
 import type { Project } from "@/types/domain";
 
 interface ProjectDialogProps {
@@ -166,11 +167,16 @@ function ProjectForm({
           Cancel
         </Button>
         <Button type="submit" disabled={submitting || !name.trim()}>
-          {submitting
-            ? "Saving..."
-            : isEdit
-              ? "Save changes"
-              : "Create project"}
+          {submitting ? (
+            <>
+              <Spinner label="Saving project" />
+              Saving...
+            </>
+          ) : isEdit ? (
+            "Save changes"
+          ) : (
+            "Create project"
+          )}
         </Button>
       </DialogFooter>
     </form>

@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { Project } from "@/types/domain";
 import { useToast } from "@/components/ui/toast";
+import { Spinner } from "@/components/ui/spinner";
 
 interface ProjectActionsProps {
   project: Project;
@@ -150,6 +151,7 @@ export function ProjectActions({ project, onEdit }: ProjectActionsProps) {
               onClick={() => void handleDelete()}
               disabled={deleting}
             >
+              {deleting ? <Spinner label="Deleting project" /> : null}
               {deleting ? "Deleting..." : "Delete project"}
             </Button>
           </DialogFooter>

@@ -17,6 +17,7 @@ import { EmptyState } from "@/components/common/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/toast";
+import { Spinner } from "@/components/ui/spinner";
 import type { Prompt } from "@/types/domain";
 
 interface PromptListProps {
@@ -247,6 +248,7 @@ function CreatePromptDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={submitting || !title.trim()}>
+              {submitting ? <Spinner label="Creating prompt" /> : null}
               {submitting ? "Creating..." : "Create prompt"}
             </Button>
           </DialogFooter>

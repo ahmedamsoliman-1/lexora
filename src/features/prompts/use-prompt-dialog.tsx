@@ -5,6 +5,7 @@ import { Check, Copy, AlertCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Dialog,
   DialogContent,
@@ -170,8 +171,9 @@ export function UsePromptDialog({
         </DialogHeader>
 
         {loading ? (
-          <div className="text-muted-foreground py-8 text-center text-sm">
-            Resolving...
+          <div className="text-muted-foreground flex items-center justify-center gap-2 py-8 text-center text-sm">
+            <Spinner label="Resolving prompt" />
+            Resolving prompt...
           </div>
         ) : error ? (
           <p className="text-destructive text-sm">{error}</p>

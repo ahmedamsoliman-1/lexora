@@ -22,6 +22,7 @@ import { useWritingCheck, type WritingStatus } from "@/hooks/use-writing-check";
 import { normalizeTags } from "@/lib/tags";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import { Spinner } from "@/components/ui/spinner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -458,6 +459,7 @@ export function PromptEditor({ prompt }: PromptEditorProps) {
                 onClick={() => void handleDelete()}
                 disabled={deleting}
               >
+                {deleting ? <Spinner label="Deleting prompt" /> : null}
                 {deleting ? "Deleting..." : "Delete prompt"}
               </Button>
             </DialogFooter>
